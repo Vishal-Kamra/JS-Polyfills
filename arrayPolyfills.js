@@ -56,11 +56,41 @@ Array.prototype.CustomSome = function (callback, thisArg) {
   return output;
 };
 
+Array.prototype.CustomFind = function (callback) {
+  let output = undefined;
+  for (let i = 0; i < this.length; i++) {
+    if (!!callback(this[i])) {
+      output = this[i];
+      break;
+    }
+  }
+  return output;
+};
+
+Array.prototype.CustomEvery = function (callback, thisArg) {
+  const givenArray = thisArg || this;
+  for (let i = 0; i < givenArray.length; i++) {
+    if (!callback(givenArray[i], i, givenArray)) {
+      return false;
+    }
+  }
+  return true;
+};
+
+Array.prototype.CustomIsArray = function () {
+  if (typeof this === "object" && this?.length >= 0) {
+    return true;
+  }
+
+  return false;
+};
+
 console.log([1, 2, 3, 4].CustomMap((x) => x + 1));
 console.log([1, 2, 3, 4, 5, 6, 7].CustomFilter((x) => x % 2 === 0));
 console.log([1, 2, 3, 4, 5].CustomReduce((accum, val) => accum + val, 2));
-console.log(
-  ["a", "b", "c", "d", "e"].CustomForEach((x, i) => console.log(i, x))
-);
+["a", "b", "c", "d", "e"].CustomForEach((x, i) => console.log(i, x));
 console.log([1, 2, 3, 4, 5, 6].CustomIncludes(9));
 console.log([1, 2, 3, 4].CustomSome((x) => x > 2, [0, 1]));
+console.log([1, 2, 3, 4].CustomFind((x) => x > 2));
+console.log([1, 2, 3, 4].CustomEvery((x) => x > 0));
+console.log([].CustomIsArray());
