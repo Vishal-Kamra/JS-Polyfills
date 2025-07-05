@@ -1,17 +1,31 @@
-Array.prototype.CustomMap = function (callback) {
-  let output = [];
+// Polyfills for Array methods
+
+// Custom Map
+Array.prototype.customMap = function (callback, thisArg) {
+  if (!this) throw new Error("customMap should be called on an array");
+  if (typeof callback !== "function")
+    throw new Error("customMap should be called with a function");
+
+  const output = [];
   for (let i = 0; i < this.length; i++) {
-    output.push(callback(this[i], i));
+    output.push(callback.call(thisArg, this[i], i, this));
   }
 
   return output;
 };
 
-Array.prototype.CustomFilter = function (callback) {
-  let output = [];
+console.log([1, , 3, 4].customMap((x) => x + 1));
+
+// Custom Filter
+Array.prototype.customFilter = function (callback, thisArg) {
+  if (!this) throw new Error("customFilter should be called on an array");
+  if (typeof callback !== "function")
+    throw new Error("customFilter should be called with a function");
+
+  const output = [];
   let temp = false;
   for (let i = 0; i < this.length; i++) {
-    temp = callback(this[i], i);
+    temp = callback.call(thisArg, this[i], i, this);
     if (!!temp) {
       output.push(this[i]);
     }
@@ -19,78 +33,98 @@ Array.prototype.CustomFilter = function (callback) {
   return output;
 };
 
-Array.prototype.CustomReduce = function (callback, initialVal = 0) {
-  let temp = initialVal;
-  for (let i = 0; i < this.length; i++) {
-    temp = callback(temp, this[i], i);
+console.log([1, 2, 3, 4, 5, 6, 7].customFilter((x) => x % 2 === 0));
+
+// Custom Reduce
+Array.prototype.customReduce = function (callback, initialVal) {
+  if (!this) throw new Error("customReduce should be called on an array");
+  if (typeof callback !== "function")
+    throw new Error("customReduce should be called with a function");
+
+  let accumulator = initialVal || this?.[0];
+  for (let i = initialVal ? 0 : 1; i < this.length; i++) {
+    accumulator = callback(accumulator, this[i], i, this);
   }
-  return temp;
+  return accumulator;
 };
 
-Array.prototype.CustomForEach = function (callback) {
+console.log([1, 2, 3, 4, 5].customReduce((accum, val) => accum + val, 2));
+
+// Custom forEach
+Array.prototype.customForEach = function (callback, thisArg) {
+  if (!this) throw new Error("customForEach should be called on an array");
+  if (typeof callback !== "function")
+    throw new Error("customForEach should be called with a function");
+
   for (let i = 0; i < this.length; i++) {
-    callback(this[i], i);
+    callback.call(thisArg, this[i], i, this);
   }
   return undefined;
 };
 
-Array.prototype.CustomIncludes = function (val) {
-  let output = false;
-  for (let i = 0; i < this.length; i++) {
+["a", "b", "c", "d", "e"].customForEach((x, i) => console.log(i, x));
+
+// Custom Includes
+Array.prototype.customIncludes = function (val, fromIndex = 0) {
+  if (!this) throw new Error("customIncludes should be called on an array");
+
+  for (let i = fromIndex; i < this.length; i++) {
     if (this[i] === val) {
-      output = true;
-      break;
+      return true;
     }
   }
-  return output;
+  return false;
 };
 
-Array.prototype.CustomSome = function (callback, thisArg) {
-  let output = false;
-  for (let i = 0; i < (thisArg || this).length; i++) {
-    if (!!callback((thisArg || this)[i])) {
-      output = true;
-      break;
-    }
-  }
-  return output;
-};
+console.log([1, 2, 3, 4, 5, 6].customIncludes(9));
 
-Array.prototype.CustomFind = function (callback) {
-  let output = undefined;
+// Custom Some
+Array.prototype.customSome = function (callback, thisArg) {
+  if (!this) throw new Error("customSome should be called on an array");
+
   for (let i = 0; i < this.length; i++) {
-    if (!!callback(this[i])) {
-      output = this[i];
-      break;
+    if (!!callback.call(thisArg, this[i], i, this)) {
+      return true;
     }
   }
-  return output;
+  return false;
 };
 
-Array.prototype.CustomEvery = function (callback, thisArg) {
-  const givenArray = thisArg || this;
-  for (let i = 0; i < givenArray.length; i++) {
-    if (!callback(givenArray[i], i, givenArray)) {
+console.log([1, 2, 3, 4].customSome((x) => x > 2, [0, 1]));
+
+// Custom Find
+Array.prototype.customFind = function (callback, thisArg) {
+  if (!this) throw new Error("customFind should be called on an array");
+
+  for (let i = 0; i < this.length; i++) {
+    if (!!callback.call(thisArg, this[i], i, this)) {
+      return this[i];
+    }
+  }
+  return undefined;
+};
+
+console.log([1, 2, 3, 4].customFind((x) => x > 2));
+
+// Custom Every
+Array.prototype.customEvery = function (callback, thisArg) {
+  if (!this) throw new Error("customEvery should be called on an array");
+
+  for (let i = 0; i < this.length; i++) {
+    if (!callback.call(thisArg, this[i], i, this)) {
       return false;
     }
   }
   return true;
 };
 
-Array.prototype.CustomIsArray = function () {
-  if (typeof this === "object" && this?.length >= 0) {
-    return true;
-  }
+console.log([1, 2, 3, 4].customEvery((x) => x > 0));
 
-  return false;
+// Custom isArray
+Array.customIsArray = function (arg) {
+  if (!arg) throw new Error("customIsArray should be called with an argument");
+
+  return Object.prototype.toString.call(arg) === "[object Array]";
 };
 
-console.log([1, 2, 3, 4].CustomMap((x) => x + 1));
-console.log([1, 2, 3, 4, 5, 6, 7].CustomFilter((x) => x % 2 === 0));
-console.log([1, 2, 3, 4, 5].CustomReduce((accum, val) => accum + val, 2));
-["a", "b", "c", "d", "e"].CustomForEach((x, i) => console.log(i, x));
-console.log([1, 2, 3, 4, 5, 6].CustomIncludes(9));
-console.log([1, 2, 3, 4].CustomSome((x) => x > 2, [0, 1]));
-console.log([1, 2, 3, 4].CustomFind((x) => x > 2));
-console.log([1, 2, 3, 4].CustomEvery((x) => x > 0));
-console.log([].CustomIsArray());
+console.log(Array.customIsArray('1'));
